@@ -1,17 +1,10 @@
 # Fairness Reward Models
 
- Implementation of "Fairness Reward Models" - a framework for improving fairness in language model outputs through test-time search and specialized reward models.
+Implementation of "Fairness Reward Models" - a framework for improving fairness in language model outputs through test-time search and specialized reward models.
 
 ## Overview
 
 This repository implements Best-of-N sampling combined with fairness-aware reward models to improve model performance on bias-sensitive tasks. Our approach focuses on reducing harmful biases while maintaining task performance across multiple fairness benchmarks.
-
-## Key Features
-
-- **Test-time Search Algorithm**: Best-of-N sampling with fairness-aware reward models
-- **Fairness-Aware Reward Models**: Specialized PRMs trained to detect and mitigate bias
-- **Multiple Fairness Benchmarks**: Support for BBQ, COMPAS, Bias in Bios, and Civil Comments
-- **Comprehensive Evaluation**: Fairness metrics including demographic parity, equalized odds, and disparate impact
 
 ## Installation
 
@@ -30,8 +23,6 @@ Our framework supports evaluation on several fairness benchmarks:
 - **COMPAS**: Recidivism risk assessment with racial fairness considerations  
 - **Bias in Bios**: Occupation classification from biographical text
 - **Civil Comments**: Content moderation with fairness constraints
-- **Adult Census**: Income prediction with demographic parity
-- **Resume Scoring**: Fair resume evaluation across protected attributes
 
 ## Quick Start
 
@@ -69,25 +60,10 @@ Then run:
 python scripts/test_time_compute.py --config your_config.yaml
 ```
 
-## Search Strategies
+## Search Strategy
 
 ### Best-of-N Sampling
 Generates N completions and selects the highest-scoring one according to the fairness reward model.
-
-### Beam Search  
-Maintains top-K candidates during generation, expanding and pruning based on PRM scores.
-
-### Diverse Verifier Tree Search (DVTS)
-Generates diverse responses through multiple verification steps, balancing quality and fairness.
-
-## Fairness Evaluation
-
-The framework automatically computes fairness metrics:
-
-- **Demographic Parity**: Equal positive prediction rates across groups
-- **Equalized Odds**: Equal TPR and FPR across demographic groups  
-- **Disparate Impact**: Ratio of positive rates between groups
-- **Statistical Parity Difference**: Difference in positive rates
 
 ## Project Structure
 
@@ -109,24 +85,16 @@ src/sal/
 └── utils/           # Utilities for scoring and data processing
 ```
 
-## Example Results
-
-Our method achieves significant improvements in fairness metrics:
-
-- **BBQ**: 15% reduction in bias score while maintaining accuracy
-- **COMPAS**: Improved equalized odds by 0.12 points
-- **Bias in Bios**: 20% improvement in demographic parity
-
 ## Citation
 
 If you use this code, please cite our paper:
 
 ```bibtex
-@article{your_paper_2024,
-  title={Fairness Reward Models},
-  author={Your Name and Co-authors},
+@article{hall2025fairnessrewardmodels
+  title={Guiding LLM Decision-Making with Fairness Reward Models},
+  author={Zara Hall and Thomas Zollo and Melanie Subbiah and Kathleen McKeown and Richard Zemel},
   journal={ArXiv},
-  year={2024}
+  year={2025}
 }
 ```
 
@@ -156,4 +124,4 @@ And the original DeepMind work:
 
 ## License
 
-Apache License 2.0s# fairness-prms
+Apache License 2.0s
