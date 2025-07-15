@@ -1,0 +1,32 @@
+# Example recipe for fairness-aware language model evaluation
+# This demonstrates Best-of-N sampling with bias detection PRM on the BBQ dataset
+
+model:
+  model_path: meta-llama/Llama-3.2-1B-Instruct
+  gpu_memory_utilization: 0.6
+  prm_paths: [zarahall/bias-prm-v3]  # Fairness-aware reward model
+  prm_weights: [1.0]
+  accuracy_weight: 0.5
+
+dataset:
+  name: heegyu/bbq  # Bias Benchmark Questions dataset
+  config: SES       # Socioeconomic status bias category
+  split: train
+  num_samples: 100  # Limit for faster testing
+
+search:
+  approach: best_of_n
+  n: 16             # Generate 16 candidates and select best
+  temperature: 0.8
+  top_p: 1.0
+  prm_batch_size: 2
+  search_batch_size: 25
+  seed: 42
+  max_tokens: 2048
+  agg_strategy: log_sum
+
+output:
+  push_to_hub: true
+  hub_dataset_private: true
+  apply_voting: true
+  compute_fairness_metrics: true

@@ -1,0 +1,18 @@
+model:
+  gpu_memory_utilization: 0.6
+  prm_weights: [1.0]
+  prm_paths: []
+output:
+  push_to_hub: true
+  hub_dataset_private: true
+  apply_voting: true
+search:
+  temperature: 0.8
+  search_batch_size: 25
+  top_p: 1.0
+  prm_batch_size: 2
+  seed: 42
+  max_tokens: 2048
+  agg_strategy: log_sum
+  math_temperature: 0.8
+  data_name: unknown
