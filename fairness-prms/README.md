@@ -60,25 +60,10 @@ Then run:
 python scripts/test_time_compute.py --config your_config.yaml
 ```
 
-## Search Strategies
+## Search Strategy
 
 ### Best-of-N Sampling
 Generates N completions and selects the highest-scoring one according to the fairness reward model.
-
-### Beam Search  
-Maintains top-K candidates during generation, expanding and pruning based on PRM scores.
-
-### Diverse Verifier Tree Search (DVTS)
-Generates diverse responses through multiple verification steps, balancing quality and fairness.
-
-## Fairness Evaluation
-
-The framework automatically computes fairness metrics:
-
-- **Demographic Parity**: Equal positive prediction rates across groups
-- **Equalized Odds**: Equal TPR and FPR across demographic groups  
-- **Disparate Impact**: Ratio of positive rates between groups
-- **Statistical Parity Difference**: Difference in positive rates
 
 ## Project Structure
 
@@ -99,14 +84,6 @@ src/sal/
 │   └── diverse_verifier_tree_search.py
 └── utils/           # Utilities for scoring and data processing
 ```
-
-## Example Results
-
-Our method achieves significant improvements in fairness metrics:
-
-- **BBQ**: 15% reduction in bias score while maintaining accuracy
-- **COMPAS**: Improved equalized odds by 0.12 points
-- **Bias in Bios**: 20% improvement in demographic parity
 
 ## Citation
 
