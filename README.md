@@ -1,6 +1,6 @@
 # Fairness Reward Models
 
-Official implementation of "Fairness Reward Models" - a framework for improving fairness in language model outputs through test-time search and specialized reward models.
+ Implementation of "Fairness Reward Models" - a framework for improving fairness in language model outputs through test-time search and specialized reward models.
 
 ## Overview
 
