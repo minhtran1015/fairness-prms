@@ -1,17 +1,10 @@
 # Fairness Reward Models
 
-Official implementation of "Fairness Reward Models" - a framework for improving fairness in language model outputs through test-time search and specialized reward models.
+Implementation of "Fairness Reward Models" - a framework for improving fairness in language model outputs through test-time search and specialized reward models.
 
 ## Overview
 
 This repository implements Best-of-N sampling combined with fairness-aware reward models to improve model performance on bias-sensitive tasks. Our approach focuses on reducing harmful biases while maintaining task performance across multiple fairness benchmarks.
-
-## Key Features
-
-- **Test-time Search Algorithm**: Best-of-N sampling with fairness-aware reward models
-- **Fairness-Aware Reward Models**: Specialized PRMs trained to detect and mitigate bias
-- **Multiple Fairness Benchmarks**: Support for BBQ, COMPAS, Bias in Bios, and Civil Comments
-- **Comprehensive Evaluation**: Fairness metrics including demographic parity, equalized odds, and disparate impact
 
 ## Installation
 
@@ -30,8 +23,6 @@ Our framework supports evaluation on several fairness benchmarks:
 - **COMPAS**: Recidivism risk assessment with racial fairness considerations  
 - **Bias in Bios**: Occupation classification from biographical text
 - **Civil Comments**: Content moderation with fairness constraints
-- **Adult Census**: Income prediction with demographic parity
-- **Resume Scoring**: Fair resume evaluation across protected attributes
 
 ## Quick Start
 
@@ -122,11 +113,11 @@ Our method achieves significant improvements in fairness metrics:
 If you use this code, please cite our paper:
 
 ```bibtex
-@article{your_paper_2024,
-  title={Fairness Reward Models},
-  author={Your Name and Co-authors},
+@article{hall2025fairnessrewardmodels
+  title={Guiding LLM Decision-Making with Fairness Reward Models},
+  author={Zara Hall and Thomas Zollo and Melanie Subbiah and Kathleen McKeown and Richard Zemel},
   journal={ArXiv},
-  year={2024}
+  year={2025}
 }
 ```
 
