@@ -25,14 +25,15 @@ from sal.config.loader import load_config
 
 from sal.config import Config
 from sal.models import load_prm
-from sal.search import beam_search, best_of_n, dvts
+# from sal.search import beam_search, best_of_n, dvts
+from sal.search import best_of_n
 from sal.utils.data import get_dataset, save_dataset
 from sal.utils.parser import H4ArgumentParser
 from sal.utils.score import score
 
 APPROACHES = {
-    "beam_search": beam_search,
-    "dvts": dvts,
+    # "beam_search": beam_search,
+    # "dvts": dvts,
     "best_of_n": best_of_n
 }
 
