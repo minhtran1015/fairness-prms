@@ -29,4 +29,4 @@ output:
   push_to_hub: true
   hub_dataset_private: true
   apply_voting: true
-  compute_fairness_metrics: true
+  # compute_fairness_metrics: true
