@@ -140,7 +140,7 @@ class RLHFFlow(PRM):
         model = AutoModelForCausalLM.from_pretrained(
             "zarahall/llama3-orm-model",
             device_map="auto",
-            torch_dtype=torch.bfloat16,
+            torch_dtype=torch.float16,
             **model_kwargs,
         ).eval()
         tokenizer.padding_side = "right"

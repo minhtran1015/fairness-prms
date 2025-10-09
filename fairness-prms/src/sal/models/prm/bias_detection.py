@@ -181,7 +181,7 @@ class LoraBiasDetectionPRM(BiasDetectionPRM):
         model = AutoModelForSequenceClassification.from_pretrained(
             model_id,
             device_map="auto",
-            torch_dtype=torch.bfloat16,
+            torch_dtype=torch.float16,
             num_labels=2,
             **model_kwargs
         ).eval()
