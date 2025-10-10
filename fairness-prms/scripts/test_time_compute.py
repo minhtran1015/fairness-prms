@@ -91,6 +91,7 @@ def main():
         enable_prefix_caching=True,
         seed=config.search.seed,
         tensor_parallel_size=num_gpus,  # Using multiple GPUs based on input
+        dtype="float16",  # <-- Add this line!
     )
     prm = load_prm(config)
     # Process dataset
