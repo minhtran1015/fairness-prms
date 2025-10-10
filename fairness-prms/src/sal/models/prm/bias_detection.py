@@ -1,3 +1,17 @@
+# Apply Transformers patch first (must be before any model imports)
+try:
+    from . import transformers_patch
+except ImportError:
+    # Patch will be created by the notebook
+    pass
+
+# Apply Transformers patch first (must be before any transformers imports)
+try:
+    from . import transformers_patch
+except ImportError:
+    # Patch file created by notebook, might not exist in dev environment
+    pass
+
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, PreTrainedModel, PreTrainedTokenizer
 from typing import List, Tuple
