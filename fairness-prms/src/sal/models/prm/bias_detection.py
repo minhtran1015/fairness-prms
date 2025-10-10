@@ -14,12 +14,21 @@ class BiasDetectionPRM(PRM):
     ) -> Tuple[PreTrainedModel, PreTrainedTokenizer]:
         model_id = self.search_config.model.prm_paths[0]
         tokenizer = AutoTokenizer.from_pretrained(model_id)
+        
+        # Load model without device_map to avoid parallel processing issues
+        # Instead, manually move to GPU after loading
         model = AutoModelForSequenceClassification.from_pretrained(
             model_id,
-            device_map="auto",
             torch_dtype=torch.float16,
+            low_cpu_mem_usage=True,
             **model_kwargs
-        ).eval()
+        )
+        
+        # Manually move to first available GPU
+        if torch.cuda.is_available():
+            model = model.to('cuda:0')
+        
+        model = model.eval()
         
         tokenizer.padding_side = "right"
         tokenizer.pad_token = tokenizer.eos_token
