@@ -15,10 +15,18 @@ class BiasDetectionPRM(PRM):
         model_id = self.search_config.model.prm_paths[0]
         tokenizer = AutoTokenizer.from_pretrained(model_id)
         
-        # Load model without device_map to avoid parallel processing issues
-        # Instead, manually move to GPU after loading
+        # Load config first and patch it to avoid parallel processing issues
+        from transformers import AutoConfig
+        config = AutoConfig.from_pretrained(model_id)
+        
+        # Patch the config to prevent parallel processing attribute issues
+        if hasattr(config, '_attn_implementation'):
+            config._attn_implementation = 'eager'
+        
+        # Load model with patched config
         model = AutoModelForSequenceClassification.from_pretrained(
             model_id,
+            config=config,
             torch_dtype=torch.float16,
             low_cpu_mem_usage=True,
             **model_kwargs
