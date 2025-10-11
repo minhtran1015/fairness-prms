@@ -121,17 +121,34 @@ def load_vllm_model(config: EvalConfig):
     
     try:
         from vllm import LLM, SamplingParams
+        import torch
+        
+        # Check GPU compute capability
+        if torch.cuda.is_available():
+            compute_cap = torch.cuda.get_device_capability(0)
+            logger.info(f"GPU Compute Capability: {compute_cap}")
+            
+            # P100 has compute capability 6.0, which requires special settings
+            if compute_cap[0] < 7:
+                logger.warning("⚠️  GPU compute capability < 7.0 detected (e.g., P100)")
+                logger.warning("⚠️  Using eager mode to avoid xformers compatibility issues")
+                enforce_eager = True
+            else:
+                enforce_eager = False
+        else:
+            enforce_eager = False
         
         # Initialize vLLM
         # Force single-process mode for Kaggle compatibility
         llm = LLM(
             model=config.model_name,
-            tensor_parallel_size=1,
+            tensor_parallel_size=config.tensor_parallel_size,
             gpu_memory_utilization=config.gpu_memory_utilization,
             dtype="float16",
             enable_prefix_caching=True,
             seed=42,
-            distributed_executor_backend="mp"  # Use multiprocessing instead of ray
+            distributed_executor_backend="mp",  # Use multiprocessing instead of ray
+            enforce_eager=enforce_eager  # Use eager mode for older GPUs like P100
         )
         
         logger.info("✅ vLLM model loaded successfully")
@@ -355,7 +372,7 @@ def main():
                         help="Number of candidates for Best-of-N")
     parser.add_argument("--temperature", type=float, default=0.7,
                         help="Sampling temperature")
-    parser.add_argument("--tensor-parallel-size", type=int, default=2,
+    parser.add_argument("--tensor-parallel-size", type=int, default=1,
                         help="Number of GPUs for tensor parallelism")
     parser.add_argument("--output-dir", type=str, default="./fairness_results",
                         help="Output directory")
