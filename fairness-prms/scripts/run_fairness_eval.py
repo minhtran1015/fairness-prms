@@ -67,17 +67,21 @@ def load_bbq_dataset(config: EvalConfig):
         from datasets import load_dataset
         
         # Load dataset - handle both old and new datasets library versions
+        # CRITICAL: In datasets 2.14.0, config name MUST be positional argument
+        # to avoid trust_remote_code being passed to BuilderConfig
         try:
             # Try with trust_remote_code (datasets < 3.0)
+            # Use positional argument for config name to avoid parameter passing issues
             dataset = load_dataset(
                 config.dataset_name,
-                config.dataset_config,
+                config.dataset_config,  # Positional, not keyword!
                 split='test',
                 trust_remote_code=True
             )
-        except TypeError:
-            # Fallback for newer versions that don't support trust_remote_code
-            logger.warning("trust_remote_code not supported, trying without it...")
+        except (TypeError, ValueError) as e:
+            # Fallback for newer versions or parameter issues
+            logger.warning(f"Error with trust_remote_code: {e}")
+            logger.warning("Trying without trust_remote_code...")
             dataset = load_dataset(
                 config.dataset_name,
                 config.dataset_config,
