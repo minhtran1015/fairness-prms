@@ -263,6 +263,17 @@ def load_prm_model(config: EvalConfig):
             prm_device = "cuda:0"
             logger.info(f"Single-GPU setup. Loading PRM on {prm_device}")
         
+        # Clear GPU cache before loading PRM to free up memory
+        logger.info("Clearing GPU cache before loading PRM...")
+        torch.cuda.empty_cache()
+        
+        # Log memory status
+        for i in range(num_gpus):
+            mem_allocated = torch.cuda.memory_allocated(i) / 1024**3
+            mem_reserved = torch.cuda.memory_reserved(i) / 1024**3
+            mem_total = torch.cuda.get_device_properties(i).total_memory / 1024**3
+            logger.info(f"GPU {i}: {mem_allocated:.2f}GB allocated, {mem_reserved:.2f}GB reserved, {mem_total:.2f}GB total")
+        
         # Load PRM model with pre-fixed config
         logger.info("Loading PRM model weights with pre-fixed config...")
         model = AutoModelForSequenceClassification.from_pretrained(
@@ -321,22 +332,22 @@ def load_prm_model(config: EvalConfig):
                 if hasattr(raw_config, 'fsdp_config') and raw_config.fsdp_config is None:
                     raw_config.fsdp_config = {}
                 
-                logger.info("Loading model with bypassed post_init...")
+                # Determine target device
+                target_device = f"cuda:{config.tensor_parallel_size - 1}" if config.tensor_parallel_size > 1 else "cuda:0"
+                logger.info(f"Loading model directly to {target_device}...")
+                
+                # Load model with device_map to avoid loading to wrong GPU first
                 model = LlamaForSequenceClassification.from_pretrained(
                     config.prm_model,
                     config=raw_config,
                     torch_dtype=torch.float16,
+                    device_map=target_device,  # Load directly to target GPU!
                     trust_remote_code=True,
                     low_cpu_mem_usage=True,
                 )
-                
-                # Manually move to target device
-                device = torch.device(f"cuda:{config.tensor_parallel_size - 1}" if config.tensor_parallel_size > 1 else "cuda:0")
-                logger.info(f"Moving model to {device}...")
-                model = model.to(device)
                 model.eval()
                 
-                logger.info(f"✅ PRM model loaded successfully using aggressive fallback on {device}")
+                logger.info(f"✅ PRM model loaded successfully using aggressive fallback on {target_device}")
                 return model, tokenizer
                 
             finally:
