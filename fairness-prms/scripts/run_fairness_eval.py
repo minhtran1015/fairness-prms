@@ -51,12 +51,12 @@ class EvalConfig:
     top_p: float = 1.0
     
     # GPU settings
-    tensor_parallel_size: int = 1  # Changed from 2 to 1 for Kaggle compatibility
-    gpu_memory_utilization: float = 0.85
+    tensor_parallel_size: int = 2  # Use 2 GPUs (Tesla T4)
+    gpu_memory_utilization: float = 0.90  # T4 has 16GB, can use more
     
     # Output settings
     output_dir: str = "./fairness_results"
-    batch_size: int = 4
+    batch_size: int = 8  # Increase batch size for dual GPUs
 
 
 def load_bbq_dataset(config: EvalConfig):
@@ -122,41 +122,70 @@ def load_vllm_model(config: EvalConfig):
     try:
         from vllm import LLM, SamplingParams
         import torch
+        import os
         
-        # Check GPU compute capability
+        # Check GPU compute capability and configure accordingly
         if torch.cuda.is_available():
+            num_gpus = torch.cuda.device_count()
             compute_cap = torch.cuda.get_device_capability(0)
-            logger.info(f"GPU Compute Capability: {compute_cap}")
+            logger.info(f"🖥️  Detected {num_gpus} GPU(s)")
+            logger.info(f"🔧 GPU 0 Compute Capability: {compute_cap}")
             
-            # P100 has compute capability 6.0, which requires special settings
-            if compute_cap[0] < 7:
-                logger.warning("⚠️  GPU compute capability < 7.0 detected (e.g., P100)")
-                logger.warning("⚠️  Using eager mode to avoid xformers compatibility issues")
+            # Tesla T4 has compute capability 7.5 - excellent support
+            if compute_cap[0] >= 7:
+                logger.info("✅ Modern GPU detected (Tesla T4 or newer)")
+                logger.info("✅ Using optimized settings with FlashAttention")
+                enforce_eager = False  # Can use CUDA graphs for better performance
+                enable_prefix_caching = True  # Enable for better efficiency
+                disable_custom_all_reduce = False  # Enable for multi-GPU
+                max_model_len = None  # Use model's default (up to 131k for Llama 3.2)
+            # P100 has compute capability 6.0 - needs compatibility mode
+            elif compute_cap[0] < 7:
+                logger.warning("⚠️  Older GPU detected (P100 or similar)")
+                logger.warning("⚠️  Using compatibility mode with TORCH_SDPA attention")
+                os.environ["VLLM_ATTENTION_BACKEND"] = "TORCH_SDPA"
                 enforce_eager = True
+                enable_prefix_caching = False
+                disable_custom_all_reduce = True
+                max_model_len = 4096
             else:
                 enforce_eager = False
+                enable_prefix_caching = True
+                disable_custom_all_reduce = False
+                max_model_len = None
         else:
-            enforce_eager = False
+            logger.error("❌ No CUDA GPU detected")
+            raise RuntimeError("CUDA GPU required for vLLM")
         
-        # Initialize vLLM
-        # Force single-process mode for Kaggle compatibility
-        llm = LLM(
-            model=config.model_name,
-            tensor_parallel_size=config.tensor_parallel_size,
-            gpu_memory_utilization=config.gpu_memory_utilization,
-            dtype="float16",
-            enable_prefix_caching=True,
-            seed=42,
-            distributed_executor_backend="mp",  # Use multiprocessing instead of ray
-            enforce_eager=enforce_eager  # Use eager mode for older GPUs like P100
-        )
+        # Initialize vLLM with optimal settings for detected GPU
+        vllm_kwargs = {
+            "model": config.model_name,
+            "tensor_parallel_size": config.tensor_parallel_size,
+            "gpu_memory_utilization": config.gpu_memory_utilization,
+            "dtype": "float16",
+            "enable_prefix_caching": enable_prefix_caching,
+            "seed": 42,
+            "trust_remote_code": True,
+            "enforce_eager": enforce_eager,
+        }
+        
+        # Add optional parameters
+        if max_model_len is not None:
+            vllm_kwargs["max_model_len"] = max_model_len
+        if disable_custom_all_reduce:
+            vllm_kwargs["disable_custom_all_reduce"] = disable_custom_all_reduce
+        if config.tensor_parallel_size > 1:
+            vllm_kwargs["distributed_executor_backend"] = "mp"
+        
+        logger.info(f"🚀 Initializing vLLM with: {vllm_kwargs}")
+        llm = LLM(**vllm_kwargs)
         
         logger.info("✅ vLLM model loaded successfully")
         return llm
         
     except Exception as e:
-        logger.error(f"Failed to load vLLM model: {e}")
-        logger.error("Make sure vLLM is installed: pip install vllm==0.6.3")
+        logger.error(f"❌ Failed to load vLLM model: {e}")
+        logger.error("Make sure vLLM is installed: pip install vllm")
         raise
 
 
