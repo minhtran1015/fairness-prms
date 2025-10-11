@@ -193,48 +193,63 @@ def load_prm_model(config: EvalConfig):
     """Load Process Reward Model for scoring."""
     logger.info(f"Loading PRM model: {config.prm_model}")
     
-    # Monkeypatch transformers to handle None values in parallel style checks
-    logger.info("Applying transformers compatibility patch for config issues...")
+    # NUCLEAR OPTION: Patch at the source - fix the config BEFORE loading model
+    logger.info("Applying pre-emptive config fix...")
     try:
-        import transformers.modeling_utils as modeling_utils
-        original_post_init = modeling_utils.PreTrainedModel.post_init
+        from transformers import AutoConfig
         
-        def patched_post_init(self):
-            """Patched post_init that handles None values gracefully."""
-            # Fix any None values in config before calling original post_init
-            if hasattr(self.config, 'fsdp') and self.config.fsdp is None:
-                self.config.fsdp = ""
-            if hasattr(self.config, 'fsdp_config') and self.config.fsdp_config is None:
-                self.config.fsdp_config = {}
-            # Call original
-            return original_post_init(self)
+        # Load config and fix it BEFORE it's used in model initialization
+        logger.info(f"Pre-loading config from {config.prm_model}...")
+        model_config = AutoConfig.from_pretrained(config.prm_model)
         
-        modeling_utils.PreTrainedModel.post_init = patched_post_init
-        logger.info("✅ Transformers compatibility patch applied")
+        # Fix ALL None values that could cause issues in post_init
+        fixed_attrs = []
+        if hasattr(model_config, 'fsdp'):
+            if model_config.fsdp is None:
+                model_config.fsdp = ""
+                fixed_attrs.append('fsdp')
+        
+        if hasattr(model_config, 'fsdp_config'):
+            if model_config.fsdp_config is None:
+                model_config.fsdp_config = {}
+                fixed_attrs.append('fsdp_config')
+        
+        # Also check for other parallel-related attributes
+        parallel_attrs = ['fsdp', 'fsdp_config', 'deepspeed', 'gradient_accumulation_steps']
+        for attr in parallel_attrs:
+            if hasattr(model_config, attr) and getattr(model_config, attr) is None:
+                if attr == 'fsdp_config':
+                    setattr(model_config, attr, {})
+                else:
+                    setattr(model_config, attr, "")
+                if attr not in fixed_attrs:
+                    fixed_attrs.append(attr)
+        
+        if fixed_attrs:
+            logger.info(f"✅ Pre-emptively fixed config attributes: {fixed_attrs}")
+        else:
+            logger.info("✅ Config check passed (no None values found)")
+            
     except Exception as patch_error:
-        logger.warning(f"Could not apply compatibility patch: {patch_error}")
+        logger.warning(f"Could not pre-load config: {patch_error}")
+        model_config = None
     
     try:
-        from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
+        from transformers import AutoModelForSequenceClassification, AutoTokenizer
         
         # Load tokenizer first
         tokenizer = AutoTokenizer.from_pretrained(config.prm_model)
         
-        # Load and patch model config to fix NoneType issues
-        logger.info("Loading and patching model config...")
-        model_config = AutoConfig.from_pretrained(config.prm_model)
-        logger.info(f"PRM model config loaded: {type(model_config)}")
-        
-        # Patch config to fix the NoneType error in post_init
-        # The error occurs when checking `if v not in ALL_PARALLEL_STYLES` with v=None
-        if hasattr(model_config, '_name_or_path'):
-            logger.info(f"Model config: {model_config._name_or_path}")
-        
-        # Fix any None values in parallel-related attributes
-        if hasattr(model_config, 'fsdp'):
-            if model_config.fsdp is None:
+        # Use the pre-fixed config from above (model_config should be defined)
+        if model_config is None:
+            logger.warning("Pre-fixed config not available, loading fresh config...")
+            from transformers import AutoConfig
+            model_config = AutoConfig.from_pretrained(config.prm_model)
+            # Emergency fix
+            if hasattr(model_config, 'fsdp') and model_config.fsdp is None:
                 model_config.fsdp = ""
-                logger.info("Fixed config.fsdp: None -> ''")
+        
+        logger.info(f"Using config: {type(model_config).__name__}")
         
         # For multi-GPU setups, put PRM on the last GPU to avoid conflicts with vLLM
         # vLLM uses GPUs 0,1 for tensor parallelism, so we use GPU 1 for PRM
@@ -248,11 +263,11 @@ def load_prm_model(config: EvalConfig):
             prm_device = "cuda:0"
             logger.info(f"Single-GPU setup. Loading PRM on {prm_device}")
         
-        # Load PRM model with patched config
-        logger.info("Loading PRM model weights...")
+        # Load PRM model with pre-fixed config
+        logger.info("Loading PRM model weights with pre-fixed config...")
         model = AutoModelForSequenceClassification.from_pretrained(
             config.prm_model,
-            config=model_config,  # Use patched config
+            config=model_config,  # Use pre-fixed config
             torch_dtype=torch.float16,
             device_map=prm_device,
             trust_remote_code=True,
@@ -269,25 +284,38 @@ def load_prm_model(config: EvalConfig):
         logger.error(f"   Model: {config.prm_model}")
         logger.error(f"   Error type: {type(e).__name__}")
         
-        # Try more aggressive config patching
+        # FALLBACK: Try loading directly from HF without from_pretrained
         try:
-            logger.info("Trying with aggressive config patching...")
-            from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
+            logger.info("🔧 Attempting fallback: Direct model loading...")
+            from transformers import AutoTokenizer, LlamaForSequenceClassification, LlamaConfig
+            import torch
             
             tokenizer = AutoTokenizer.from_pretrained(config.prm_model)
-            model_config = AutoConfig.from_pretrained(config.prm_model)
             
-            # Patch all potentially problematic None values
-            if hasattr(model_config, 'fsdp') and model_config.fsdp is None:
-                model_config.fsdp = ""
-            if hasattr(model_config, 'fsdp_config') and model_config.fsdp_config is None:
-                model_config.fsdp_config = {}
+            # Load config as LlamaConfig and sanitize it
+            logger.info("Loading config as LlamaConfig...")
+            raw_config = LlamaConfig.from_pretrained(config.prm_model)
             
-            # Load without device_map first
-            logger.info("Loading model to CPU first...")
-            model = AutoModelForSequenceClassification.from_pretrained(
+            # Create a clean config dict without problematic None values
+            config_dict = raw_config.to_dict()
+            
+            # Remove or fix problematic keys
+            problematic_keys = ['fsdp', 'fsdp_config', 'deepspeed']
+            for key in problematic_keys:
+                if key in config_dict:
+                    if config_dict[key] is None:
+                        config_dict[key] = "" if key != 'fsdp_config' else {}
+                        logger.info(f"Fixed {key}: None -> {config_dict[key]}")
+            
+            # Create fresh config from cleaned dict
+            clean_config = LlamaConfig(**config_dict)
+            logger.info("✅ Created clean config")
+            
+            # Now load model with clean config
+            logger.info("Loading model with clean config...")
+            model = LlamaForSequenceClassification.from_pretrained(
                 config.prm_model,
-                config=model_config,
+                config=clean_config,
                 torch_dtype=torch.float16,
                 trust_remote_code=True,
                 low_cpu_mem_usage=True,
