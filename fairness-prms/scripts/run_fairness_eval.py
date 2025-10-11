@@ -60,52 +60,66 @@ class EvalConfig:
 
 
 def load_bbq_dataset(config: EvalConfig):
-    """Load BBQ dataset with proper error handling."""
+    """Load BBQ dataset directly from Hugging Face without datasets library cache issues."""
     logger.info(f"Loading BBQ dataset: {config.dataset_name} [{config.dataset_config}]")
     
     try:
-        from datasets import load_dataset
+        import requests
+        from huggingface_hub import hf_hub_download
+        import pandas as pd
+        import random
         
-        # Load dataset - handle both old and new datasets library versions
-        # CRITICAL: In datasets 2.14.0, avoid using FORCE_REDOWNLOAD as it causes
-        # LocalFileSystem cache issues. Simply load normally and let it use cache.
+        logger.info("Downloading dataset directly from Hugging Face Hub...")
         
-        logger.info("Attempting to load dataset...")
+        # Download the parquet file directly for the specific config
+        # BBQ dataset structure: data/{config}/test-00000-of-00001.parquet
+        try:
+            file_path = hf_hub_download(
+                repo_id=config.dataset_name,
+                filename=f"data/{config.dataset_config}/test-00000-of-00001.parquet",
+                repo_type="dataset"
+            )
+            logger.info(f"Downloaded file: {file_path}")
+        except Exception as e:
+            logger.error(f"Failed to download parquet file: {e}")
+            logger.info("Trying alternative download method...")
+            # Fallback: construct direct URL
+            url = f"https://huggingface.co/datasets/{config.dataset_name}/resolve/main/data/{config.dataset_config}/test-00000-of-00001.parquet"
+            response = requests.get(url)
+            response.raise_for_status()
+            file_path = f"/tmp/bbq_{config.dataset_config}.parquet"
+            with open(file_path, 'wb') as f:
+                f.write(response.content)
+            logger.info(f"Downloaded to: {file_path}")
         
-        # For datasets 2.14.0, don't use download_mode as it can cause cache issues
-        # Just load normally - it will reuse cache if available
-        dataset = load_dataset(
-            config.dataset_name,
-            config.dataset_config,  # Positional argument
-            split='test'
-            # Note: No download_mode or trust_remote_code to avoid compatibility issues
-        )
-        
-        logger.info(f"Loaded {len(dataset)} examples")
+        # Load the parquet file
+        df = pd.read_parquet(file_path)
+        logger.info(f"Loaded {len(df)} examples")
         
         # Filter for ambiguous context
-        dataset = dataset.filter(
-            lambda x: x.get('context_condition') == 'ambig',
-            desc="Filtering for ambiguous context"
-        )
-        logger.info(f"After filtering: {len(dataset)} examples")
+        df = df[df['context_condition'] == 'ambig']
+        logger.info(f"After filtering for ambiguous context: {len(df)} examples")
         
         # Filter by example_id based on config
         if config.dataset_config == "Age":
-            dataset = dataset.filter(lambda x: x.get('example_id', 0) > 2000)
+            df = df[df['example_id'] > 2000]
         else:
-            dataset = dataset.filter(lambda x: x.get('example_id', 0) > 500)
+            df = df[df['example_id'] > 500]
+        logger.info(f"After filtering by example_id: {len(df)} examples")
         
         # Shuffle and select samples
-        dataset = dataset.shuffle(seed=42)
-        dataset = dataset.select(range(min(len(dataset), config.num_samples)))
+        df = df.sample(frac=1, random_state=42).reset_index(drop=True)
+        df = df.head(min(len(df), config.num_samples))
+        
+        # Convert to list of dicts (similar to datasets format)
+        dataset = df.to_dict('records')
         
         logger.info(f"Final dataset size: {len(dataset)} examples")
         return dataset
         
     except Exception as e:
         logger.error(f"Failed to load dataset: {e}")
-        logger.error(f"Make sure you have datasets library installed: pip install datasets==2.14.0")
+        logger.error(f"Make sure you have pandas and huggingface_hub installed")
         raise
 
 
