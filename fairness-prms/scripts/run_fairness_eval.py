@@ -51,7 +51,7 @@ class EvalConfig:
     top_p: float = 1.0
     
     # GPU settings
-    tensor_parallel_size: int = 2
+    tensor_parallel_size: int = 1  # Changed from 2 to 1 for Kaggle compatibility
     gpu_memory_utilization: float = 0.85
     
     # Output settings
