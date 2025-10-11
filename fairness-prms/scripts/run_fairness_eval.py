@@ -72,19 +72,22 @@ def load_bbq_dataset(config: EvalConfig):
         logger.info("Downloading dataset directly from Hugging Face Hub...")
         
         # Download the parquet file directly for the specific config
-        # BBQ dataset structure: data/{config}/test-00000-of-00001.parquet
+        # BBQ dataset has auto-converted parquet files in refs/convert/parquet branch
+        # Structure: {config}/test-00000-of-00001.parquet
         try:
+            # Try the auto-converted parquet branch first
             file_path = hf_hub_download(
                 repo_id=config.dataset_name,
-                filename=f"data/{config.dataset_config}/test-00000-of-00001.parquet",
-                repo_type="dataset"
+                filename=f"{config.dataset_config}/test-00000-of-00001.parquet",
+                repo_type="dataset",
+                revision="refs/convert/parquet"
             )
-            logger.info(f"Downloaded file: {file_path}")
+            logger.info(f"Downloaded file from parquet branch: {file_path}")
         except Exception as e:
-            logger.error(f"Failed to download parquet file: {e}")
-            logger.info("Trying alternative download method...")
-            # Fallback: construct direct URL
-            url = f"https://huggingface.co/datasets/{config.dataset_name}/resolve/main/data/{config.dataset_config}/test-00000-of-00001.parquet"
+            logger.warning(f"Failed to download from parquet branch: {e}")
+            logger.info("Trying direct URL download...")
+            # Fallback: construct direct URL to parquet conversion branch
+            url = f"https://huggingface.co/datasets/{config.dataset_name}/resolve/refs%2Fconvert%2Fparquet/{config.dataset_config}/test-00000-of-00001.parquet"
             response = requests.get(url)
             response.raise_for_status()
             file_path = f"/tmp/bbq_{config.dataset_config}.parquet"
