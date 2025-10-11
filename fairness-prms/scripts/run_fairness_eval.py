@@ -194,23 +194,71 @@ def load_prm_model(config: EvalConfig):
     logger.info(f"Loading PRM model: {config.prm_model}")
     
     try:
-        from transformers import AutoModelForSequenceClassification, AutoTokenizer
+        from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
         
-        # Load PRM model
+        # Load tokenizer first
         tokenizer = AutoTokenizer.from_pretrained(config.prm_model)
+        
+        # Load model config and check for issues
+        try:
+            model_config = AutoConfig.from_pretrained(config.prm_model)
+            logger.info(f"PRM model config loaded: {type(model_config)}")
+        except Exception as e:
+            logger.warning(f"Could not load config explicitly: {e}")
+            model_config = None
+        
+        # For multi-GPU setups, put PRM on the last GPU to avoid conflicts with vLLM
+        # vLLM uses GPUs 0,1 for tensor parallelism, so we use GPU 1 for PRM
+        num_gpus = torch.cuda.device_count()
+        if config.tensor_parallel_size > 1:
+            # Use last GPU for PRM when using tensor parallelism
+            prm_device = f"cuda:{config.tensor_parallel_size - 1}"
+            logger.info(f"Multi-GPU setup detected. Loading PRM on {prm_device}")
+        else:
+            # Use first GPU for single-GPU setup
+            prm_device = "cuda:0"
+            logger.info(f"Single-GPU setup. Loading PRM on {prm_device}")
+        
+        # Load PRM model with better error handling
+        logger.info("Loading PRM model weights...")
         model = AutoModelForSequenceClassification.from_pretrained(
             config.prm_model,
             torch_dtype=torch.float16,
-            device_map="cuda:0"  # Put on first GPU
+            device_map=prm_device,
+            trust_remote_code=True,
+            low_cpu_mem_usage=True,
+            # Add these to handle potential config issues
+            ignore_mismatched_sizes=False,
         )
         model.eval()
         
-        logger.info("✅ PRM model loaded successfully")
+        logger.info(f"✅ PRM model loaded successfully on {prm_device}")
+        logger.info(f"   Model memory usage: ~{sum(p.numel() * p.element_size() for p in model.parameters()) / 1024**3:.2f} GB")
         return model, tokenizer
         
     except Exception as e:
-        logger.error(f"Failed to load PRM model: {e}")
-        raise
+        logger.error(f"❌ Failed to load PRM model: {e}")
+        logger.error(f"   Model: {config.prm_model}")
+        logger.error(f"   Trying alternative loading method...")
+        
+        # Try loading without device_map as fallback
+        try:
+            from transformers import AutoModelForSequenceClassification, AutoTokenizer
+            tokenizer = AutoTokenizer.from_pretrained(config.prm_model)
+            model = AutoModelForSequenceClassification.from_pretrained(
+                config.prm_model,
+                torch_dtype=torch.float16,
+                trust_remote_code=True,
+            )
+            # Manually move to device
+            device = torch.device(f"cuda:{config.tensor_parallel_size - 1}" if config.tensor_parallel_size > 1 else "cuda:0")
+            model = model.to(device)
+            model.eval()
+            logger.info(f"✅ PRM model loaded successfully using fallback method on {device}")
+            return model, tokenizer
+        except Exception as e2:
+            logger.error(f"❌ Fallback also failed: {e2}")
+            raise
 
 
 def format_bbq_prompt(example: Dict[str, Any]) -> str:
