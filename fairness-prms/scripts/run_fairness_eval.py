@@ -193,6 +193,27 @@ def load_prm_model(config: EvalConfig):
     """Load Process Reward Model for scoring."""
     logger.info(f"Loading PRM model: {config.prm_model}")
     
+    # Monkeypatch transformers to handle None values in parallel style checks
+    logger.info("Applying transformers compatibility patch for config issues...")
+    try:
+        import transformers.modeling_utils as modeling_utils
+        original_post_init = modeling_utils.PreTrainedModel.post_init
+        
+        def patched_post_init(self):
+            """Patched post_init that handles None values gracefully."""
+            # Fix any None values in config before calling original post_init
+            if hasattr(self.config, 'fsdp') and self.config.fsdp is None:
+                self.config.fsdp = ""
+            if hasattr(self.config, 'fsdp_config') and self.config.fsdp_config is None:
+                self.config.fsdp_config = {}
+            # Call original
+            return original_post_init(self)
+        
+        modeling_utils.PreTrainedModel.post_init = patched_post_init
+        logger.info("✅ Transformers compatibility patch applied")
+    except Exception as patch_error:
+        logger.warning(f"Could not apply compatibility patch: {patch_error}")
+    
     try:
         from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
         
