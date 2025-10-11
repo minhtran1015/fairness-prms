@@ -64,39 +64,28 @@ def load_bbq_dataset(config: EvalConfig):
     logger.info(f"Loading BBQ dataset: {config.dataset_name} [{config.dataset_config}]")
     
     try:
-        import requests
+        import json
         from huggingface_hub import hf_hub_download
         import pandas as pd
-        import random
         
         logger.info("Downloading dataset directly from Hugging Face Hub...")
         
-        # Download the parquet file directly for the specific config
-        # BBQ dataset has auto-converted parquet files in refs/convert/parquet branch
-        # Structure: {config}/test-00000-of-00001.parquet
-        try:
-            # Try the auto-converted parquet branch first
-            file_path = hf_hub_download(
-                repo_id=config.dataset_name,
-                filename=f"{config.dataset_config}/test-00000-of-00001.parquet",
-                repo_type="dataset",
-                revision="refs/convert/parquet"
-            )
-            logger.info(f"Downloaded file from parquet branch: {file_path}")
-        except Exception as e:
-            logger.warning(f"Failed to download from parquet branch: {e}")
-            logger.info("Trying direct URL download...")
-            # Fallback: construct direct URL to parquet conversion branch
-            url = f"https://huggingface.co/datasets/{config.dataset_name}/resolve/refs%2Fconvert%2Fparquet/{config.dataset_config}/test-00000-of-00001.parquet"
-            response = requests.get(url)
-            response.raise_for_status()
-            file_path = f"/tmp/bbq_{config.dataset_config}.parquet"
-            with open(file_path, 'wb') as f:
-                f.write(response.content)
-            logger.info(f"Downloaded to: {file_path}")
+        # Download the JSONL file directly for the specific config
+        # BBQ dataset structure: data/{config}.jsonl
+        file_path = hf_hub_download(
+            repo_id=config.dataset_name,
+            filename=f"data/{config.dataset_config}.jsonl",
+            repo_type="dataset"
+        )
+        logger.info(f"Downloaded file: {file_path}")
         
-        # Load the parquet file
-        df = pd.read_parquet(file_path)
+        # Load the JSONL file
+        data = []
+        with open(file_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                data.append(json.loads(line))
+        
+        df = pd.DataFrame(data)
         logger.info(f"Loaded {len(df)} examples")
         
         # Filter for ambiguous context
