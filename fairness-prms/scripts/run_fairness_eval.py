@@ -64,21 +64,21 @@ def load_bbq_dataset(config: EvalConfig):
     logger.info(f"Loading BBQ dataset: {config.dataset_name} [{config.dataset_config}]")
     
     try:
-        from datasets import load_dataset, DownloadMode
+        from datasets import load_dataset
         
         # Load dataset - handle both old and new datasets library versions
-        # CRITICAL: In datasets 2.14.0, we need to use download_mode to avoid cache issues
-        # and NOT pass trust_remote_code as it gets incorrectly forwarded to BuilderConfig
+        # CRITICAL: In datasets 2.14.0, avoid using FORCE_REDOWNLOAD as it causes
+        # LocalFileSystem cache issues. Simply load normally and let it use cache.
         
-        logger.info("Attempting to load dataset (forcing fresh download to avoid cache issues)...")
+        logger.info("Attempting to load dataset...")
         
-        # For datasets 2.14.0, the trust_remote_code parameter causes issues
-        # The workaround is to load without it and force redownload
+        # For datasets 2.14.0, don't use download_mode as it can cause cache issues
+        # Just load normally - it will reuse cache if available
         dataset = load_dataset(
             config.dataset_name,
             config.dataset_config,  # Positional argument
-            split='test',
-            download_mode=DownloadMode.FORCE_REDOWNLOAD  # Avoid cache issues
+            split='test'
+            # Note: No download_mode or trust_remote_code to avoid compatibility issues
         )
         
         logger.info(f"Loaded {len(dataset)} examples")
