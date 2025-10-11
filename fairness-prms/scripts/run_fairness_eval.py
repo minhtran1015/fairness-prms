@@ -251,23 +251,17 @@ def load_prm_model(config: EvalConfig):
         
         logger.info(f"Using config: {type(model_config).__name__}")
         
-        # For multi-GPU setups, put PRM on the last GPU to avoid conflicts with vLLM
-        # vLLM uses GPUs 0,1 for tensor parallelism, so we use GPU 1 for PRM
-        num_gpus = torch.cuda.device_count()
-        if config.tensor_parallel_size > 1:
-            # Use last GPU for PRM when using tensor parallelism
-            prm_device = f"cuda:{config.tensor_parallel_size - 1}"
-            logger.info(f"Multi-GPU setup detected. Loading PRM on {prm_device}")
-        else:
-            # Use first GPU for single-GPU setup
-            prm_device = "cuda:0"
-            logger.info(f"Single-GPU setup. Loading PRM on {prm_device}")
+        # HARDCODED: Always use cuda:1 for PRM to avoid any conditional logic issues
+        # vLLM uses tensor parallelism across GPUs 0,1, PRM goes on GPU 1
+        prm_device = "cuda:1"
+        logger.info(f"Loading PRM on {prm_device} (hardcoded for dual-GPU setup)")
         
         # Clear GPU cache before loading PRM to free up memory
         logger.info("Clearing GPU cache before loading PRM...")
         torch.cuda.empty_cache()
         
         # Log memory status
+        num_gpus = torch.cuda.device_count()
         for i in range(num_gpus):
             mem_allocated = torch.cuda.memory_allocated(i) / 1024**3
             mem_reserved = torch.cuda.memory_reserved(i) / 1024**3
@@ -276,11 +270,13 @@ def load_prm_model(config: EvalConfig):
         
         # Load PRM model with pre-fixed config
         logger.info("Loading PRM model weights with pre-fixed config...")
+        # Use device_map as dict to avoid tensor parallelism issues
+        device_map_dict = {"": prm_device}  # Empty key means all layers go to this device
         model = AutoModelForSequenceClassification.from_pretrained(
             config.prm_model,
             config=model_config,  # Use pre-fixed config
             torch_dtype=torch.float16,
-            device_map=prm_device,
+            device_map=device_map_dict,
             trust_remote_code=True,
             low_cpu_mem_usage=True,
         )
@@ -332,16 +328,17 @@ def load_prm_model(config: EvalConfig):
                 if hasattr(raw_config, 'fsdp_config') and raw_config.fsdp_config is None:
                     raw_config.fsdp_config = {}
                 
-                # Determine target device
-                target_device = f"cuda:{config.tensor_parallel_size - 1}" if config.tensor_parallel_size > 1 else "cuda:0"
-                logger.info(f"Loading model directly to {target_device}...")
+                # HARDCODED: Always use cuda:1 for PRM
+                target_device = "cuda:1"
+                logger.info(f"Loading model directly to {target_device} (hardcoded for dual-GPU setup)...")
                 
-                # Load model with device_map to avoid loading to wrong GPU first
+                # Load model with device_map as dict to avoid tensor parallelism issues
+                device_map_dict = {"": target_device}  # Empty key means all layers go to this device
                 model = LlamaForSequenceClassification.from_pretrained(
                     config.prm_model,
                     config=raw_config,
                     torch_dtype=torch.float16,
-                    device_map=target_device,  # Load directly to target GPU!
+                    device_map=device_map_dict,  # Use dict format!
                     trust_remote_code=True,
                     low_cpu_mem_usage=True,
                 )
