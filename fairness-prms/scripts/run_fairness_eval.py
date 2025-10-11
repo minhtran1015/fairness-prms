@@ -391,6 +391,10 @@ def score_with_prm(texts: List[str], prm_model, prm_tokenizer, batch_size: int =
     """Score texts using the PRM model."""
     scores = []
     
+    # Get the device of the PRM model
+    prm_device = next(prm_model.parameters()).device
+    logger.debug(f"PRM model is on device: {prm_device}")
+    
     for i in range(0, len(texts), batch_size):
         batch_texts = texts[i:i + batch_size]
         
@@ -401,7 +405,7 @@ def score_with_prm(texts: List[str], prm_model, prm_tokenizer, batch_size: int =
             padding=True,
             truncation=True,
             max_length=2048
-        ).to("cuda:0")
+        ).to(prm_device)  # Move to same device as PRM model
         
         # Get scores
         with torch.no_grad():
