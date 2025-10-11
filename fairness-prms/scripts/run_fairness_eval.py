@@ -126,7 +126,7 @@ def load_vllm_model(config: EvalConfig):
         # Force single-process mode for Kaggle compatibility
         llm = LLM(
             model=config.model_name,
-            tensor_parallel_size=config.tensor_parallel_size,
+            tensor_parallel_size=1,
             gpu_memory_utilization=config.gpu_memory_utilization,
             dtype="float16",
             enable_prefix_caching=True,
