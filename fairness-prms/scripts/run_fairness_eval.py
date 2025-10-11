@@ -270,16 +270,18 @@ def load_prm_model(config: EvalConfig):
         
         # Load PRM model with pre-fixed config
         logger.info("Loading PRM model weights with pre-fixed config...")
-        # Use device_map as dict to avoid tensor parallelism issues
-        device_map_dict = {"": prm_device}  # Empty key means all layers go to this device
+        # Load to CPU first to avoid device_map tensor parallelism issues
         model = AutoModelForSequenceClassification.from_pretrained(
             config.prm_model,
             config=model_config,  # Use pre-fixed config
             torch_dtype=torch.float16,
-            device_map=device_map_dict,
             trust_remote_code=True,
             low_cpu_mem_usage=True,
         )
+        
+        # Manually move to target GPU
+        logger.info(f"Moving PRM model to {prm_device}...")
+        model = model.to(prm_device)
         model.eval()
         
         logger.info(f"✅ PRM model loaded successfully on {prm_device}")
@@ -332,16 +334,18 @@ def load_prm_model(config: EvalConfig):
                 target_device = "cuda:1"
                 logger.info(f"Loading model directly to {target_device} (hardcoded for dual-GPU setup)...")
                 
-                # Load model with device_map as dict to avoid tensor parallelism issues
-                device_map_dict = {"": target_device}  # Empty key means all layers go to this device
+                # Load to CPU first to avoid device_map issues
                 model = LlamaForSequenceClassification.from_pretrained(
                     config.prm_model,
                     config=raw_config,
                     torch_dtype=torch.float16,
-                    device_map=device_map_dict,  # Use dict format!
                     trust_remote_code=True,
                     low_cpu_mem_usage=True,
                 )
+                
+                # Manually move to target GPU
+                logger.info(f"Moving model to {target_device}...")
+                model = model.to(target_device)
                 model.eval()
                 
                 logger.info(f"✅ PRM model loaded successfully using aggressive fallback on {target_device}")
