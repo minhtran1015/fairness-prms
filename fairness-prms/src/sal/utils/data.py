@@ -27,7 +27,8 @@ from sal.config import Config
 logger = logging.getLogger()
 def _load_bbq_dataset(config: Config) -> Dataset:
     """Load and prepare the BBQ dataset."""
-    dataset = load_dataset("heegyu/bbq", config.dataset.config, split='test', trust_remote_code=True)
+    # Note: trust_remote_code must be passed directly, not as part of the config name
+    dataset = load_dataset("heegyu/bbq", name=config.dataset.config, split='test', trust_remote_code=True)
     
     # Filter for ambiguous context condition
     dataset = dataset.filter(lambda x: x['context_condition'] == 'ambig')
