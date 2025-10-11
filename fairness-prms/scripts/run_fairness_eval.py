@@ -199,13 +199,21 @@ def load_prm_model(config: EvalConfig):
         # Load tokenizer first
         tokenizer = AutoTokenizer.from_pretrained(config.prm_model)
         
-        # Load model config and check for issues
-        try:
-            model_config = AutoConfig.from_pretrained(config.prm_model)
-            logger.info(f"PRM model config loaded: {type(model_config)}")
-        except Exception as e:
-            logger.warning(f"Could not load config explicitly: {e}")
-            model_config = None
+        # Load and patch model config to fix NoneType issues
+        logger.info("Loading and patching model config...")
+        model_config = AutoConfig.from_pretrained(config.prm_model)
+        logger.info(f"PRM model config loaded: {type(model_config)}")
+        
+        # Patch config to fix the NoneType error in post_init
+        # The error occurs when checking `if v not in ALL_PARALLEL_STYLES` with v=None
+        if hasattr(model_config, '_name_or_path'):
+            logger.info(f"Model config: {model_config._name_or_path}")
+        
+        # Fix any None values in parallel-related attributes
+        if hasattr(model_config, 'fsdp'):
+            if model_config.fsdp is None:
+                model_config.fsdp = ""
+                logger.info("Fixed config.fsdp: None -> ''")
         
         # For multi-GPU setups, put PRM on the last GPU to avoid conflicts with vLLM
         # vLLM uses GPUs 0,1 for tensor parallelism, so we use GPU 1 for PRM
@@ -219,16 +227,15 @@ def load_prm_model(config: EvalConfig):
             prm_device = "cuda:0"
             logger.info(f"Single-GPU setup. Loading PRM on {prm_device}")
         
-        # Load PRM model with better error handling
+        # Load PRM model with patched config
         logger.info("Loading PRM model weights...")
         model = AutoModelForSequenceClassification.from_pretrained(
             config.prm_model,
+            config=model_config,  # Use patched config
             torch_dtype=torch.float16,
             device_map=prm_device,
             trust_remote_code=True,
             low_cpu_mem_usage=True,
-            # Add these to handle potential config issues
-            ignore_mismatched_sizes=False,
         )
         model.eval()
         
@@ -237,27 +244,47 @@ def load_prm_model(config: EvalConfig):
         return model, tokenizer
         
     except Exception as e:
-        logger.error(f"❌ Failed to load PRM model: {e}")
+        logger.error(f"❌ Failed to load PRM model (primary method): {e}")
         logger.error(f"   Model: {config.prm_model}")
-        logger.error(f"   Trying alternative loading method...")
+        logger.error(f"   Error type: {type(e).__name__}")
         
-        # Try loading without device_map as fallback
+        # Try more aggressive config patching
         try:
-            from transformers import AutoModelForSequenceClassification, AutoTokenizer
+            logger.info("Trying with aggressive config patching...")
+            from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
+            
             tokenizer = AutoTokenizer.from_pretrained(config.prm_model)
+            model_config = AutoConfig.from_pretrained(config.prm_model)
+            
+            # Patch all potentially problematic None values
+            if hasattr(model_config, 'fsdp') and model_config.fsdp is None:
+                model_config.fsdp = ""
+            if hasattr(model_config, 'fsdp_config') and model_config.fsdp_config is None:
+                model_config.fsdp_config = {}
+            
+            # Load without device_map first
+            logger.info("Loading model to CPU first...")
             model = AutoModelForSequenceClassification.from_pretrained(
                 config.prm_model,
+                config=model_config,
                 torch_dtype=torch.float16,
                 trust_remote_code=True,
+                low_cpu_mem_usage=True,
             )
-            # Manually move to device
+            
+            # Manually move to target device
             device = torch.device(f"cuda:{config.tensor_parallel_size - 1}" if config.tensor_parallel_size > 1 else "cuda:0")
+            logger.info(f"Moving model to {device}...")
             model = model.to(device)
             model.eval()
+            
             logger.info(f"✅ PRM model loaded successfully using fallback method on {device}")
             return model, tokenizer
+            
         except Exception as e2:
             logger.error(f"❌ Fallback also failed: {e2}")
+            logger.error(f"   Error type: {type(e2).__name__}")
+            logger.error("Please check if the model exists and is accessible")
             raise
 
 
