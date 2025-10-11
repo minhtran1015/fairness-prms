@@ -284,51 +284,65 @@ def load_prm_model(config: EvalConfig):
         logger.error(f"   Model: {config.prm_model}")
         logger.error(f"   Error type: {type(e).__name__}")
         
-        # FALLBACK: Try loading directly from HF without from_pretrained
+        # FALLBACK: Try the MOST AGGRESSIVE approach - skip post_init entirely
         try:
-            logger.info("🔧 Attempting fallback: Direct model loading...")
+            logger.info("🔧 Attempting AGGRESSIVE fallback: Bypassing post_init...")
             from transformers import AutoTokenizer, LlamaForSequenceClassification, LlamaConfig
-            import torch
+            import transformers.modeling_utils
             
             tokenizer = AutoTokenizer.from_pretrained(config.prm_model)
             
-            # Load config as LlamaConfig and sanitize it
-            logger.info("Loading config as LlamaConfig...")
-            raw_config = LlamaConfig.from_pretrained(config.prm_model)
+            # NUCLEAR OPTION: Replace post_init with a no-op to bypass the buggy check
+            logger.info("Replacing post_init with safe version...")
+            original_post_init = transformers.modeling_utils.PreTrainedModel.post_init
             
-            # Create a clean config dict without problematic None values
-            config_dict = raw_config.to_dict()
+            def safe_post_init(self):
+                """Safe post_init that skips the buggy parallel style validation."""
+                # Just do weight tying, skip the buggy fsdp validation
+                if hasattr(self, 'tie_weights'):
+                    try:
+                        self.tie_weights()
+                    except:
+                        pass
+                # Skip all the problematic validation code
+                logger.debug("post_init bypassed successfully")
             
-            # Remove or fix problematic keys
-            problematic_keys = ['fsdp', 'fsdp_config', 'deepspeed']
-            for key in problematic_keys:
-                if key in config_dict:
-                    if config_dict[key] is None:
-                        config_dict[key] = "" if key != 'fsdp_config' else {}
-                        logger.info(f"Fixed {key}: None -> {config_dict[key]}")
+            # Temporarily replace post_init
+            transformers.modeling_utils.PreTrainedModel.post_init = safe_post_init
             
-            # Create fresh config from cleaned dict
-            clean_config = LlamaConfig(**config_dict)
-            logger.info("✅ Created clean config")
-            
-            # Now load model with clean config
-            logger.info("Loading model with clean config...")
-            model = LlamaForSequenceClassification.from_pretrained(
-                config.prm_model,
-                config=clean_config,
-                torch_dtype=torch.float16,
-                trust_remote_code=True,
-                low_cpu_mem_usage=True,
-            )
-            
-            # Manually move to target device
-            device = torch.device(f"cuda:{config.tensor_parallel_size - 1}" if config.tensor_parallel_size > 1 else "cuda:0")
-            logger.info(f"Moving model to {device}...")
-            model = model.to(device)
-            model.eval()
-            
-            logger.info(f"✅ PRM model loaded successfully using fallback method on {device}")
-            return model, tokenizer
+            try:
+                # Load config and model with bypassed post_init
+                logger.info("Loading config as LlamaConfig...")
+                raw_config = LlamaConfig.from_pretrained(config.prm_model)
+                
+                # Still try to fix config attributes just in case
+                if hasattr(raw_config, 'fsdp') and raw_config.fsdp is None:
+                    raw_config.fsdp = ""
+                if hasattr(raw_config, 'fsdp_config') and raw_config.fsdp_config is None:
+                    raw_config.fsdp_config = {}
+                
+                logger.info("Loading model with bypassed post_init...")
+                model = LlamaForSequenceClassification.from_pretrained(
+                    config.prm_model,
+                    config=raw_config,
+                    torch_dtype=torch.float16,
+                    trust_remote_code=True,
+                    low_cpu_mem_usage=True,
+                )
+                
+                # Manually move to target device
+                device = torch.device(f"cuda:{config.tensor_parallel_size - 1}" if config.tensor_parallel_size > 1 else "cuda:0")
+                logger.info(f"Moving model to {device}...")
+                model = model.to(device)
+                model.eval()
+                
+                logger.info(f"✅ PRM model loaded successfully using aggressive fallback on {device}")
+                return model, tokenizer
+                
+            finally:
+                # Restore original post_init
+                transformers.modeling_utils.PreTrainedModel.post_init = original_post_init
+                logger.debug("Restored original post_init")
             
         except Exception as e2:
             logger.error(f"❌ Fallback also failed: {e2}")
