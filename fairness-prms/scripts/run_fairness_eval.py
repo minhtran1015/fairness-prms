@@ -123,13 +123,15 @@ def load_vllm_model(config: EvalConfig):
         from vllm import LLM, SamplingParams
         
         # Initialize vLLM
+        # Force single-process mode for Kaggle compatibility
         llm = LLM(
             model=config.model_name,
             tensor_parallel_size=config.tensor_parallel_size,
             gpu_memory_utilization=config.gpu_memory_utilization,
             dtype="float16",
             enable_prefix_caching=True,
-            seed=42
+            seed=42,
+            distributed_executor_backend="mp"  # Use multiprocessing instead of ray
         )
         
         logger.info("✅ vLLM model loaded successfully")
