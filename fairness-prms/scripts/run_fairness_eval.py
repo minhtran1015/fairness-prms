@@ -64,29 +64,22 @@ def load_bbq_dataset(config: EvalConfig):
     logger.info(f"Loading BBQ dataset: {config.dataset_name} [{config.dataset_config}]")
     
     try:
-        from datasets import load_dataset
+        from datasets import load_dataset, DownloadMode
         
         # Load dataset - handle both old and new datasets library versions
-        # CRITICAL: In datasets 2.14.0, config name MUST be positional argument
-        # to avoid trust_remote_code being passed to BuilderConfig
-        try:
-            # Try with trust_remote_code (datasets < 3.0)
-            # Use positional argument for config name to avoid parameter passing issues
-            dataset = load_dataset(
-                config.dataset_name,
-                config.dataset_config,  # Positional, not keyword!
-                split='test',
-                trust_remote_code=True
-            )
-        except (TypeError, ValueError) as e:
-            # Fallback for newer versions or parameter issues
-            logger.warning(f"Error with trust_remote_code: {e}")
-            logger.warning("Trying without trust_remote_code...")
-            dataset = load_dataset(
-                config.dataset_name,
-                config.dataset_config,
-                split='test'
-            )
+        # CRITICAL: In datasets 2.14.0, we need to use download_mode to avoid cache issues
+        # and NOT pass trust_remote_code as it gets incorrectly forwarded to BuilderConfig
+        
+        logger.info("Attempting to load dataset (forcing fresh download to avoid cache issues)...")
+        
+        # For datasets 2.14.0, the trust_remote_code parameter causes issues
+        # The workaround is to load without it and force redownload
+        dataset = load_dataset(
+            config.dataset_name,
+            config.dataset_config,  # Positional argument
+            split='test',
+            download_mode=DownloadMode.FORCE_REDOWNLOAD  # Avoid cache issues
+        )
         
         logger.info(f"Loaded {len(dataset)} examples")
         
@@ -307,7 +300,7 @@ def save_results(results: List[Dict], config: EvalConfig):
     summary = compute_summary_stats(results)
     summary_file = output_dir / "summary_stats.json"
     with open(summary_file, 'w') as f:
-        json.dumps(summary, f, indent=2)
+        json.dump(summary, f, indent=2)
     
     logger.info(f"✅ Summary saved to: {summary_file}")
     
