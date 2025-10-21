@@ -1,0 +1,7 @@
+{
+  "total_examples": 1289,
+  "avg_prm_score": 2.0404266286395703,
+  "min_prm_score": -0.568359375,
+  "max_prm_score": 4.6171875,
+  "num_candidates_per_example": 8
+}
