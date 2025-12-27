@@ -1,0 +1,49 @@
+Dataset,Metric,Method,Value
+"COMPAS (Race)","Average Acc. (↑)","CoT@1",63
+"COMPAS (Race)","Average Acc. (↑)","Maj@32",66
+"COMPAS (Race)","Average Acc. (↑)","Fairness Prompt",53
+"COMPAS (Race)","Average Acc. (↑)","FRM",64
+"Civil Comments (Orientation)","Average Acc. (↑)","CoT@1",56
+"Civil Comments (Orientation)","Average Acc. (↑)","Maj@32",58
+"Civil Comments (Orientation)","Average Acc. (↑)","Fairness Prompt",50
+"Civil Comments (Orientation)","Average Acc. (↑)","FRM",63
+"Civil Comments (Religion)","Average Acc. (↑)","CoT@1",67
+"Civil Comments (Religion)","Average Acc. (↑)","Maj@32",67
+"Civil Comments (Religion)","Average Acc. (↑)","Fairness Prompt",51
+"Civil Comments (Religion)","Average Acc. (↑)","FRM",67
+"Bias in Bios (Gender)","Average Acc. (↑)","CoT@1",63
+"Bias in Bios (Gender)","Average Acc. (↑)","Maj@32",67
+"Bias in Bios (Gender)","Average Acc. (↑)","Fairness Prompt",62
+"Bias in Bios (Gender)","Average Acc. (↑)","FRM",68
+"COMPAS (Race)","Deviation from Eq. Opp. (↓)","CoT@1",15
+"COMPAS (Race)","Deviation from Eq. Opp. (↓)","Maj@32",12
+"COMPAS (Race)","Deviation from Eq. Opp. (↓)","Fairness Prompt",8
+"COMPAS (Race)","Deviation from Eq. Opp. (↓)","FRM",7
+"Civil Comments (Orientation)","Deviation from Eq. Opp. (↓)","CoT@1",10
+"Civil Comments (Orientation)","Deviation from Eq. Opp. (↓)","Maj@32",7
+"Civil Comments (Orientation)","Deviation from Eq. Opp. (↓)","Fairness Prompt",8
+"Civil Comments (Orientation)","Deviation from Eq. Opp. (↓)","FRM",3
+"Civil Comments (Religion)","Deviation from Eq. Opp. (↓)","CoT@1",29
+"Civil Comments (Religion)","Deviation from Eq. Opp. (↓)","Maj@32",35
+"Civil Comments (Religion)","Deviation from Eq. Opp. (↓)","Fairness Prompt",42
+"Civil Comments (Religion)","Deviation from Eq. Opp. (↓)","FRM",24
+"Bias in Bios (Gender)","Deviation from Eq. Opp. (↓)","CoT@1",15
+"Bias in Bios (Gender)","Deviation from Eq. Opp. (↓)","Maj@32",14
+"Bias in Bios (Gender)","Deviation from Eq. Opp. (↓)","Fairness Prompt",6
+"Bias in Bios (Gender)","Deviation from Eq. Opp. (↓)","FRM",10
+"COMPAS (Race)","Deviation from Eq. Odds (↓)","CoT@1",28
+"COMPAS (Race)","Deviation from Eq. Odds (↓)","Maj@32",19
+"COMPAS (Race)","Deviation from Eq. Odds (↓)","Fairness Prompt",13
+"COMPAS (Race)","Deviation from Eq. Odds (↓)","FRM",13
+"Civil Comments (Orientation)","Deviation from Eq. Odds (↓)","CoT@1",14
+"Civil Comments (Orientation)","Deviation from Eq. Odds (↓)","Maj@32",13
+"Civil Comments (Orientation)","Deviation from Eq. Odds (↓)","Fairness Prompt",15
+"Civil Comments (Orientation)","Deviation from Eq. Odds (↓)","FRM",12
+"Civil Comments (Religion)","Deviation from Eq. Odds (↓)","CoT@1",58
+"Civil Comments (Religion)","Deviation from Eq. Odds (↓)","Maj@32",67
+"Civil Comments (Religion)","Deviation from Eq. Odds (↓)","Fairness Prompt",68
+"Civil Comments (Religion)","Deviation from Eq. Odds (↓)","FRM",48
+"Bias in Bios (Gender)","Deviation from Eq. Odds (↓)","CoT@1",
+"Bias in Bios (Gender)","Deviation from Eq. Odds (↓)","Maj@32",
+"Bias in Bios (Gender)","Deviation from Eq. Odds (↓)","Fairness Prompt",
+"Bias in Bios (Gender)","Deviation from Eq. Odds (↓)","FRM",

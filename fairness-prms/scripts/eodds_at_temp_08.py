@@ -66,7 +66,11 @@ ax.tick_params(axis='y', labelsize=TICK_LABEL_FONT)
 # Đặt giới hạn cho trục X để dễ đọc hơn
 ax.set_xlim(0, df_temp_08['eodds_gap'].max() * 1.15) # Tăng 15% để có chỗ cho nhãn
 
-plt.tight_layout()
-plt.savefig('fairness-prms/evaluation_output/eodds_gap_distribution_at_temp_08.png')
 
-print("Biểu đồ phân bổ EOdds Gap với phông chữ LỚN HƠN và Tiếng Việt đã được lưu.")
+plt.tight_layout()
+plt.savefig('fairness-prms/evaluation_output/eodds_gap_distribution_at_temp_08.png', 
+            dpi=300, bbox_inches='tight')
+plt.savefig('fairness-prms/evaluation_output/eodds_gap_distribution_at_temp_08.pdf', 
+            bbox_inches='tight')
+
+print("Biểu đồ phân bổ EOdds Gap với phông chữ LỚN HƠN và Tiếng Việt đã được lưu (PNG + PDF).")

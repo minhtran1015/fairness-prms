@@ -5,8 +5,8 @@
     "correct":1569,
     "total":2582,
     "accuracy":0.6076684741,
-    "eopp_gap":0.0883545991,
-    "eodds_gap":0.0883545991
+    "eopp_gap":0.0,
+    "eodds_gap":0.2334649556
   },
   {
     "category":"Gender_identity",
@@ -14,8 +14,8 @@
     "correct":1515,
     "total":2585,
     "accuracy":0.586073501,
-    "eopp_gap":0.0610286029,
-    "eodds_gap":0.0610286029
+    "eopp_gap":0.0,
+    "eodds_gap":0.2518691589
   },
   {
     "category":"Gender_identity",
@@ -23,8 +23,8 @@
     "correct":1415,
     "total":2585,
     "accuracy":0.5473887814,
-    "eopp_gap":0.0495187019,
-    "eodds_gap":0.2
+    "eopp_gap":0.0,
+    "eodds_gap":0.2581196581
   },
   {
     "category":"Gender_identity",
@@ -32,8 +32,8 @@
     "correct":1549,
     "total":2507,
     "accuracy":0.6178699641,
-    "eopp_gap":0.1248050652,
-    "eodds_gap":0.1248050652
+    "eopp_gap":0.0,
+    "eodds_gap":0.2745302714
   },
   {
     "category":"Disability_status",
@@ -42,7 +42,7 @@
     "total":527,
     "accuracy":0.624288425,
     "eopp_gap":0.0,
-    "eodds_gap":0.0
+    "eodds_gap":0.2373737374
   },
   {
     "category":"Disability_status",
@@ -51,7 +51,7 @@
     "total":527,
     "accuracy":0.5825426945,
     "eopp_gap":0.0,
-    "eodds_gap":0.0
+    "eodds_gap":0.2181818182
   },
   {
     "category":"Disability_status",
@@ -60,7 +60,7 @@
     "total":527,
     "accuracy":0.5483870968,
     "eopp_gap":0.0,
-    "eodds_gap":0.0
+    "eodds_gap":0.1764705882
   },
   {
     "category":"Disability_status",
@@ -69,7 +69,7 @@
     "total":517,
     "accuracy":0.6189555126,
     "eopp_gap":0.0,
-    "eodds_gap":0.0
+    "eodds_gap":0.1700507614
   },
   {
     "category":"Nationality",
@@ -77,8 +77,8 @@
     "correct":829,
     "total":1287,
     "accuracy":0.6441336441,
-    "eopp_gap":0.0155844156,
-    "eodds_gap":0.125
+    "eopp_gap":0.0,
+    "eodds_gap":0.1168122271
   },
   {
     "category":"Nationality",
@@ -86,8 +86,8 @@
     "correct":754,
     "total":1289,
     "accuracy":0.5849495733,
-    "eopp_gap":0.0376779935,
-    "eodds_gap":0.0376779935
+    "eopp_gap":0.0,
+    "eodds_gap":0.114953271
   },
   {
     "category":"Nationality",
@@ -95,8 +95,8 @@
     "correct":685,
     "total":1289,
     "accuracy":0.5314197052,
-    "eopp_gap":0.0219255663,
-    "eodds_gap":0.0219255663
+    "eopp_gap":0.0,
+    "eodds_gap":0.1092715232
   },
   {
     "category":"Nationality",
@@ -104,8 +104,8 @@
     "correct":891,
     "total":1243,
     "accuracy":0.7168141593,
-    "eopp_gap":0.0061298412,
-    "eodds_gap":0.1666666667
+    "eopp_gap":0.0,
+    "eodds_gap":0.1363636364
   },
   {
     "category":"Race_x_SES",
@@ -113,8 +113,8 @@
     "correct":3230,
     "total":5322,
     "accuracy":0.6069146937,
-    "eopp_gap":0.1088528424,
-    "eodds_gap":0.1088528424
+    "eopp_gap":0.0,
+    "eodds_gap":0.1
   },
   {
     "category":"Race_x_SES",
@@ -122,8 +122,8 @@
     "correct":3075,
     "total":5329,
     "accuracy":0.577031338,
-    "eopp_gap":0.0854738614,
-    "eodds_gap":0.0854738614
+    "eopp_gap":0.0,
+    "eodds_gap":0.18
   },
   {
     "category":"Race_x_SES",
@@ -131,8 +131,8 @@
     "correct":2857,
     "total":5329,
     "accuracy":0.5361231,
-    "eopp_gap":0.07608144,
-    "eodds_gap":0.07608144
+    "eopp_gap":0.0,
+    "eodds_gap":0.0400485437
   },
   {
     "category":"Race_x_SES",
@@ -140,8 +140,8 @@
     "correct":3327,
     "total":5190,
     "accuracy":0.6410404624,
-    "eopp_gap":0.1137292542,
-    "eodds_gap":0.1137292542
+    "eopp_gap":0.0,
+    "eodds_gap":0.05
   },
   {
     "category":"Race_ethnicity",
@@ -149,8 +149,8 @@
     "correct":2094,
     "total":3185,
     "accuracy":0.6574568289,
-    "eopp_gap":0.0673432717,
-    "eodds_gap":0.0833333333
+    "eopp_gap":0.0,
+    "eodds_gap":0.15
   },
   {
     "category":"Race_ethnicity",
@@ -158,8 +158,8 @@
     "correct":1912,
     "total":3189,
     "accuracy":0.5995609909,
-    "eopp_gap":0.0641709277,
-    "eodds_gap":0.125
+    "eopp_gap":0.0,
+    "eodds_gap":0.15
   },
   {
     "category":"Race_ethnicity",
@@ -167,8 +167,8 @@
     "correct":1735,
     "total":3189,
     "accuracy":0.5440576983,
-    "eopp_gap":0.0273972375,
-    "eodds_gap":0.125
+    "eopp_gap":0.0,
+    "eodds_gap":0.0763411279
   },
   {
     "category":"Race_ethnicity",
@@ -176,8 +176,8 @@
     "correct":2108,
     "total":3068,
     "accuracy":0.6870925684,
-    "eopp_gap":0.081344666,
-    "eodds_gap":0.081344666
+    "eopp_gap":0.0,
+    "eodds_gap":0.1
   },
   {
     "category":"Physical_appearance",
@@ -185,8 +185,8 @@
     "correct":366,
     "total":537,
     "accuracy":0.6815642458,
-    "eopp_gap":0.0721409574,
-    "eodds_gap":0.125
+    "eopp_gap":0.0,
+    "eodds_gap":0.0994152047
   },
   {
     "category":"Physical_appearance",
@@ -194,8 +194,8 @@
     "correct":353,
     "total":537,
     "accuracy":0.6573556797,
-    "eopp_gap":0.029587766,
-    "eodds_gap":0.029587766
+    "eopp_gap":0.0,
+    "eodds_gap":0.1114130435
   },
   {
     "category":"Physical_appearance",
@@ -203,8 +203,8 @@
     "correct":341,
     "total":537,
     "accuracy":0.635009311,
-    "eopp_gap":0.0132978723,
-    "eodds_gap":0.25
+    "eopp_gap":0.0,
+    "eodds_gap":0.15
   },
   {
     "category":"Physical_appearance",
@@ -212,8 +212,8 @@
     "correct":393,
     "total":526,
     "accuracy":0.747148289,
-    "eopp_gap":0.2235092235,
-    "eodds_gap":0.2235092235
+    "eopp_gap":0.0,
+    "eodds_gap":0.12
   },
   {
     "category":"Religion",
@@ -221,8 +221,8 @@
     "correct":236,
     "total":349,
     "accuracy":0.676217765,
-    "eopp_gap":0.0166666667,
-    "eodds_gap":0.125
+    "eopp_gap":0.0,
+    "eodds_gap":0.1
   },
   {
     "category":"Religion",
@@ -230,8 +230,8 @@
     "correct":217,
     "total":349,
     "accuracy":0.6217765043,
-    "eopp_gap":0.0833333333,
-    "eodds_gap":0.3333333333
+    "eopp_gap":0.0,
+    "eodds_gap":0.1
   },
   {
     "category":"Religion",
@@ -239,8 +239,8 @@
     "correct":192,
     "total":349,
     "accuracy":0.5501432665,
-    "eopp_gap":0.1666666667,
-    "eodds_gap":0.1666666667
+    "eopp_gap":0.0,
+    "eodds_gap":0.0414012739
   },
   {
     "category":"Religion",
@@ -248,8 +248,8 @@
     "correct":240,
     "total":341,
     "accuracy":0.7038123167,
-    "eopp_gap":0.0372881356,
-    "eodds_gap":0.125
+    "eopp_gap":0.0,
+    "eodds_gap":0.0544554455
   },
   {
     "category":"Age",
@@ -257,8 +257,8 @@
     "correct":569,
     "total":837,
     "accuracy":0.6798088411,
-    "eopp_gap":0.0355293122,
-    "eodds_gap":0.1666666667
+    "eopp_gap":0.0,
+    "eodds_gap":0.1082089552
   },
   {
     "category":"Age",
@@ -266,8 +266,8 @@
     "correct":550,
     "total":839,
     "accuracy":0.6555423123,
-    "eopp_gap":0.0106000322,
-    "eodds_gap":0.2
+    "eopp_gap":0.0,
+    "eodds_gap":0.12
   },
   {
     "category":"Age",
@@ -275,8 +275,8 @@
     "correct":543,
     "total":839,
     "accuracy":0.6471990465,
-    "eopp_gap":0.0122277148,
-    "eodds_gap":0.0122277148
+    "eopp_gap":0.0,
+    "eodds_gap":0.0844594595
   },
   {
     "category":"Age",
@@ -284,8 +284,8 @@
     "correct":575,
     "total":822,
     "accuracy":0.699513382,
-    "eopp_gap":0.0005865103,
-    "eodds_gap":0.0833333333
+    "eopp_gap":0.0,
+    "eodds_gap":0.1113360324
   },
   {
     "category":"Race_x_gender",
@@ -293,8 +293,8 @@
     "correct":4907,
     "total":7720,
     "accuracy":0.6356217617,
-    "eopp_gap":0.0317911455,
-    "eodds_gap":0.0317911455
+    "eopp_gap":0.0,
+    "eodds_gap":0.1093974175
   },
   {
     "category":"Race_x_gender",
@@ -302,8 +302,8 @@
     "correct":4672,
     "total":7729,
     "accuracy":0.6044766464,
-    "eopp_gap":0.0303571429,
-    "eodds_gap":0.1666666667
+    "eopp_gap":0.0,
+    "eodds_gap":0.1005614267
   },
   {
     "category":"Race_x_gender",
@@ -311,8 +311,8 @@
     "correct":4308,
     "total":7729,
     "accuracy":0.5573812912,
-    "eopp_gap":0.0228174603,
-    "eodds_gap":0.1
+    "eopp_gap":0.0,
+    "eodds_gap":0.1030365566
   },
   {
     "category":"Race_x_gender",
@@ -320,8 +320,8 @@
     "correct":4831,
     "total":7457,
     "accuracy":0.6478476599,
-    "eopp_gap":0.0181730687,
-    "eodds_gap":0.0181730687
+    "eopp_gap":0.0,
+    "eodds_gap":0.1115384615
   },
   {
     "category":"SES",
@@ -330,7 +330,7 @@
     "total":3175,
     "accuracy":0.6705511811,
     "eopp_gap":0.0,
-    "eodds_gap":0.0
+    "eodds_gap":0.05
   },
   {
     "category":"SES",
@@ -339,7 +339,7 @@
     "total":3181,
     "accuracy":0.6303049356,
     "eopp_gap":0.0,
-    "eodds_gap":0.0
+    "eodds_gap":0.1
   },
   {
     "category":"SES",
@@ -348,7 +348,7 @@
     "total":3181,
     "accuracy":0.5897516504,
     "eopp_gap":0.0,
-    "eodds_gap":0.0
+    "eodds_gap":0.0770114943
   },
   {
     "category":"SES",
@@ -357,7 +357,7 @@
     "total":3100,
     "accuracy":0.6916129032,
     "eopp_gap":0.0,
-    "eodds_gap":0.0
+    "eodds_gap":0.0052301255
   },
   {
     "category":"Sexual_orientation",
@@ -365,8 +365,8 @@
     "correct":135,
     "total":180,
     "accuracy":0.75,
-    "eopp_gap":0.1220238095,
-    "eodds_gap":0.1666666667
+    "eopp_gap":0.0,
+    "eodds_gap":0.0444444444
   },
   {
     "category":"Sexual_orientation",
@@ -374,8 +374,8 @@
     "correct":115,
     "total":181,
     "accuracy":0.635359116,
-    "eopp_gap":0.09375,
-    "eodds_gap":0.1666666667
+    "eopp_gap":0.0,
+    "eodds_gap":0.0378787879
   },
   {
     "category":"Sexual_orientation",
@@ -383,8 +383,8 @@
     "correct":101,
     "total":181,
     "accuracy":0.5580110497,
-    "eopp_gap":0.140625,
-    "eodds_gap":0.140625
+    "eopp_gap":0.0,
+    "eodds_gap":0.0625
   },
   {
     "category":"Sexual_orientation",
@@ -392,7 +392,7 @@
     "correct":141,
     "total":176,
     "accuracy":0.8011363636,
-    "eopp_gap":0.0758928571,
-    "eodds_gap":0.2
+    "eopp_gap":0.0,
+    "eodds_gap":0.12
   }
 ]
